@@ -1,27 +1,6 @@
 #!/usr/bin/env node
 
-import { readFileSync, existsSync } from "fs";
-import { homedir } from "os";
-import { join } from "path";
-
-const SENTRY_API_BASE = "https://sentry.io/api/0";
-
-function getAuthToken() {
-  const rcPath = join(homedir(), ".sentryclirc");
-  if (!existsSync(rcPath)) {
-    console.error("Error: ~/.sentryclirc not found");
-    console.error("Run 'sentry-cli login' to authenticate");
-    process.exit(1);
-  }
-
-  const content = readFileSync(rcPath, "utf-8");
-  const match = content.match(/token\s*=\s*(.+)/);
-  if (!match) {
-    console.error("Error: No token found in ~/.sentryclirc");
-    process.exit(1);
-  }
-  return match[1].trim();
-}
+import { SENTRY_API_BASE, getAuthToken, fetchJson, formatTimestamp } from "../lib/auth.js";
 
 function parseIssueInput(input) {
   // Full URL: https://sentry.io/organizations/sentry/issues/5765604106/
@@ -53,31 +32,6 @@ function parseIssueInput(input) {
   return { issueId: input };
 }
 
-async function fetchJson(url, token) {
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`API error ${res.status}: ${text}`);
-  }
-
-  return res.json();
-}
-
-function formatTimestamp(ts) {
-  if (!ts) return "N/A";
-  try {
-    const date = new Date(ts);
-    if (isNaN(date.getTime())) return ts; // Return raw value if invalid
-    return date.toLocaleString();
-  } catch {
-    return ts; // Return raw value on error
-  }
-}
 
 function formatStacktrace(frames, { maxFrames = 20, showContext = true } = {}) {
   if (!frames || frames.length === 0) return "  (no frames)";

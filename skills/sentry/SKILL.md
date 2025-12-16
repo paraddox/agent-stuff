@@ -1,11 +1,11 @@
 ---
 name: sentry
-description: "Fetch and analyze Sentry issues directly from the API. Helps agents understand errors, stack traces, and issue context."
+description: "Fetch and analyze Sentry issues and search logs directly from the API. Helps agents understand errors, stack traces, logs, and issue context."
 ---
 
 # Sentry Skill
 
-Fetch Sentry issue details directly via the API. Uses auth token from `~/.sentryclirc`.
+Access Sentry data directly via the API. Uses auth token from `~/.sentryclirc`.
 
 ## Fetch Issue
 
@@ -49,3 +49,61 @@ With `--latest`, also shows:
 - Request details (method, URL, headers, body)
 - Recent breadcrumbs with timestamps
 - Runtime context (Node version, OS, browser, device)
+
+## Search Logs
+
+```bash
+./tools/search-logs.js [query|url] [options]
+```
+
+Search for logs in Sentry's Logs Explorer.
+
+Accepts either:
+- Search query with `--org` flag
+- Sentry logs explorer URL (extracts org, project, period automatically)
+
+### Options
+
+- `--org, -o <org>` - Organization slug (required unless URL provided)
+- `--project, -p <project>` - Filter by project slug or ID
+- `--period, -t <period>` - Time period (default: 24h, e.g., 1h, 7d, 90d)
+- `--limit, -n <n>` - Max results (default: 100, max: 1000)
+- `--json` - Output raw JSON
+
+### Search Query Syntax
+
+```
+level:error              Filter by log level (trace, debug, info, warn, error, fatal)
+message:*timeout*        Search message text with wildcards
+trace:abc123             Filter by trace ID
+project:my-project       Filter by project slug
+```
+
+Combine filters: `level:error message:*failed*`
+
+### Examples
+
+```bash
+# List recent logs for an org
+./tools/search-logs.js --org myorg
+
+# Search for errors in a specific project
+./tools/search-logs.js "level:error" --org myorg --project backend
+
+# Search for timeout messages in the last 7 days
+./tools/search-logs.js "message:*timeout*" --org myorg --period 7d
+
+# Get logs as JSON
+./tools/search-logs.js --org myorg --limit 50 --json
+
+# Use a Sentry logs explorer URL directly
+./tools/search-logs.js "https://myorg.sentry.io/explore/logs/?project=123&statsPeriod=7d"
+```
+
+### Output
+
+Returns log entries with:
+- Timestamp
+- Severity level (TRACE, DEBUG, INFO, WARN, ERROR, FATAL)
+- Message content
+- Trace ID (when available)
