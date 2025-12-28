@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { SENTRY_API_BASE, getAuthToken, fetchJson, formatTimestamp } from "../lib/auth.js";
+import { SENTRY_API_BASE, getAuthToken, fetchJson, formatTimestamp, resolveProjectId } from "../lib/auth.js";
 
 const HELP = `Usage: list-issues.js [options]
 
@@ -214,20 +214,13 @@ async function main() {
     params.set("sort", options.sort);
   }
 
-  // Build URL based on whether project is specified
-  // If a single project slug is given, use the project endpoint which accepts slugs
-  // If multiple projects or none, use the org endpoint (which needs project IDs)
-  let url;
-  if (options.projects.length === 1 && !/^\d+$/.test(options.projects[0])) {
-    // Single project slug - use project endpoint
-    url = `${SENTRY_API_BASE}/projects/${encodeURIComponent(options.org)}/${encodeURIComponent(options.projects[0])}/issues/?${params.toString()}`;
-  } else {
-    // Multiple projects or project IDs - use org endpoint
-    for (const project of options.projects) {
-      params.append("project", project);
-    }
-    url = `${SENTRY_API_BASE}/organizations/${encodeURIComponent(options.org)}/issues/?${params.toString()}`;
+  // Build URL - always use org endpoint with resolved project IDs
+  // This handles both slugs and numeric IDs uniformly
+  for (const project of options.projects) {
+    const projectId = await resolveProjectId(options.org, project, token);
+    params.append("project", projectId);
   }
+  const url = `${SENTRY_API_BASE}/organizations/${encodeURIComponent(options.org)}/issues/?${params.toString()}`;
 
   try {
     const data = await fetchJson(url, token);

@@ -4,6 +4,9 @@ import { join } from "path";
 
 export const SENTRY_API_BASE = "https://sentry.io/api/0";
 
+// Cache for project slug -> ID resolution
+const projectIdCache = new Map();
+
 /**
  * Get auth token from ~/.sentryclirc
  * @returns {string} The auth token
@@ -60,4 +63,37 @@ export function formatTimestamp(ts) {
   } catch {
     return ts;
   }
+}
+
+/**
+ * Resolve a project slug to its numeric ID.
+ * If the input is already a numeric ID, returns it as-is.
+ * @param {string} org - Organization slug
+ * @param {string} project - Project slug or numeric ID
+ * @param {string} token - Auth token
+ * @returns {Promise<string>} The numeric project ID
+ */
+export async function resolveProjectId(org, project, token) {
+  // If already numeric, return as-is
+  if (/^\d+$/.test(project)) {
+    return project;
+  }
+
+  // Check cache
+  const cacheKey = `${org}/${project}`;
+  if (projectIdCache.has(cacheKey)) {
+    return projectIdCache.get(cacheKey);
+  }
+
+  // Fetch project details to get the ID
+  const url = `${SENTRY_API_BASE}/projects/${encodeURIComponent(org)}/${encodeURIComponent(project)}/`;
+  const data = await fetchJson(url, token);
+
+  if (!data || !data.id) {
+    throw new Error(`Project '${project}' not found in organization '${org}'`);
+  }
+
+  const id = String(data.id);
+  projectIdCache.set(cacheKey, id);
+  return id;
 }

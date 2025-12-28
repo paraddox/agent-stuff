@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { SENTRY_API_BASE, getAuthToken, fetchJson, formatTimestamp } from "../lib/auth.js";
+import { SENTRY_API_BASE, getAuthToken, fetchJson, formatTimestamp, resolveProjectId } from "../lib/auth.js";
 
 const HELP = `Usage: search-events.js [options]
 
@@ -240,7 +240,8 @@ async function main() {
   const queryParts = [];
 
   if (options.project) {
-    params.set("project", options.project);
+    const projectId = await resolveProjectId(options.org, options.project, token);
+    params.set("project", projectId);
   }
 
   if (options.query) {
