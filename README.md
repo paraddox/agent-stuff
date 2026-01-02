@@ -59,6 +59,12 @@ In the [`skills/improve-skill`](skills/improve-skill) folder is a skill that hel
 
 In the [`skills/ghidra`](skills/ghidra) folder is a skill for automated reverse engineering using Ghidra's headless analyzer.  It can decompile binaries to C code, extract functions, strings, symbols, and analyze call graphs without needing the GUI.  Requires Ghidra installed (on macOS: `brew install --cask ghidra`).
 
+## PI Coding Agent Hooks
+
+Custom hooks for the PI Coding Agent can be found in the [`pi-hooks`](pi-hooks) folder:
+
+* [`qna.ts`](pi-hooks/qna.ts) - Extracts questions from the last assistant message into the editor for easy answering. Uses Claude Haiku for cost-efficient extraction when available.
+
 ## PI Coding Agent Themes
 
-This repository includes custom themes for the PI Coding Agent. The themes can be found in the [`themes`](themes) folder and customize the appearance and behavior of the agent interface.
+This repository includes custom themes for the PI Coding Agent. The themes can be found in the [`pi-themes`](pi-themes) folder and customize the appearance and behavior of the agent interface.
