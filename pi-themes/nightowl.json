@@ -30,6 +30,7 @@
 		"muted": "gray",
 		"dim": "dimGray",
 		"text": "",
+		"thinkingText": "gray",
 
 		"userMessageBg": "userMsgBg",
 		"userMessageText": "",

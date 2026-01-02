@@ -30,7 +30,9 @@
 		"muted": "gray",
 		"dim": "dimGray",
 		"text": "",
+		"thinkingText": "gray",
 
+		"selectedBg": "darkGray",
 		"userMessageBg": "userMsgBg",
 		"userMessageText": "",
 		"toolPendingBg": "toolPendingBg",
@@ -38,6 +40,9 @@
 		"toolErrorBg": "toolErrorBg",
 		"toolTitle": "",
 		"toolOutput": "gray",
+		"customMessageBg": "userMsgBg",
+		"customMessageText": "",
+		"customMessageLabel": "accent",
 
 		"mdHeading": "yellow",
 		"mdLink": "blue",
