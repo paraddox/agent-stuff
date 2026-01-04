@@ -17,14 +17,8 @@ import {
 	type Component,
 	Editor,
 	type EditorTheme,
-	isArrowDown,
-	isArrowUp,
-	isCtrlC,
-	isEnter,
-	isEscape,
-	isShiftEnter,
-	isTab,
-	isShiftTab,
+	Key,
+	matchesKey,
 	truncateToWidth,
 	visibleWidth,
 	wrapTextWithAnsi,
@@ -234,11 +228,11 @@ class QnAComponent implements Component {
 	handleInput(data: string): void {
 		// Handle confirmation dialog
 		if (this.showingConfirmation) {
-			if (isEnter(data) || data.toLowerCase() === "y") {
+			if (matchesKey(data, Key.enter) || data.toLowerCase() === "y") {
 				this.submit();
 				return;
 			}
-			if (isEscape(data) || isCtrlC(data) || data.toLowerCase() === "n") {
+			if (matchesKey(data, Key.escape) || matchesKey(data, Key.ctrl("c")) || data.toLowerCase() === "n") {
 				this.showingConfirmation = false;
 				this.invalidate();
 				this.tui.requestRender();
@@ -248,20 +242,20 @@ class QnAComponent implements Component {
 		}
 
 		// Global navigation and commands
-		if (isEscape(data) || isCtrlC(data)) {
+		if (matchesKey(data, Key.escape) || matchesKey(data, Key.ctrl("c"))) {
 			this.cancel();
 			return;
 		}
 
 		// Tab / Shift+Tab for navigation
-		if (isTab(data)) {
+		if (matchesKey(data, Key.tab)) {
 			if (this.currentIndex < this.questions.length - 1) {
 				this.navigateTo(this.currentIndex + 1);
 				this.tui.requestRender();
 			}
 			return;
 		}
-		if (isShiftTab(data)) {
+		if (matchesKey(data, Key.shift("tab"))) {
 			if (this.currentIndex > 0) {
 				this.navigateTo(this.currentIndex - 1);
 				this.tui.requestRender();
@@ -271,14 +265,14 @@ class QnAComponent implements Component {
 
 		// Arrow up/down for question navigation when editor is empty
 		// (Editor handles its own cursor navigation when there's content)
-		if (isArrowUp(data) && this.editor.getText() === "") {
+		if (matchesKey(data, Key.up) && this.editor.getText() === "") {
 			if (this.currentIndex > 0) {
 				this.navigateTo(this.currentIndex - 1);
 				this.tui.requestRender();
 				return;
 			}
 		}
-		if (isArrowDown(data) && this.editor.getText() === "") {
+		if (matchesKey(data, Key.down) && this.editor.getText() === "") {
 			if (this.currentIndex < this.questions.length - 1) {
 				this.navigateTo(this.currentIndex + 1);
 				this.tui.requestRender();
@@ -289,7 +283,7 @@ class QnAComponent implements Component {
 		// Handle Enter ourselves (editor's submit is disabled)
 		// Plain Enter moves to next question or shows confirmation on last question
 		// Shift+Enter adds a newline (handled by editor)
-		if (isEnter(data) && !isShiftEnter(data)) {
+		if (matchesKey(data, Key.enter) && !matchesKey(data, Key.shift("enter"))) {
 			this.saveCurrentAnswer();
 			if (this.currentIndex < this.questions.length - 1) {
 				this.navigateTo(this.currentIndex + 1);
